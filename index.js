@@ -69,13 +69,16 @@ async function getContent({clientId, accessToken, website, path}) {
 
 
 const server = http.createServer((req, res) => {
-  const url = req.url; //.replace(/&amp;/g, '&');
-  const pattern = /\?website=([\w-.]+)&path=(?:\/?([\/\w-]*))?$/;
+  const url = req.url;
+  const pattern = /\?website=([\w-.]+)&path=(?:\/?([\/\w-.]*))?$/;
   console.log(`Request: ${url}`);
-  const m = url.match(pattern);
+  let m = url.match(pattern);
   if (!m) {
-    console.log('Illegal request. Ignored');
-    return;
+    const patternUrl = /\?url=\/([\w.-]+)(?:\/?([\/\w-.]*))?$/;
+    if (!m) {
+      console.log('Illegal request. Ignored');
+      return;
+    }
   }
   const website = m[1];
   const path = m[2] ? `website/${m[2]}` : 'website';
