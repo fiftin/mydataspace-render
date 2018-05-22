@@ -41,7 +41,7 @@ async function getContent({clientId, accessToken, website, path}) {
 
 
 const server = http.createServer((req, res) => {
-  const pattern = /^https?://([\w-.]+)(?:\/(.*))?$/;
+  const pattern = /\?website=([\w-.]+)&path=(?:\/?([\/\w-]*))?$/;
   if (!pattern) {
     return;
   }
