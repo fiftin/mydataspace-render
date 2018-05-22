@@ -75,6 +75,7 @@ const server = http.createServer((req, res) => {
   let m = url.match(pattern);
   if (!m) {
     const patternUrl = /\?url=\/([\w.-]+)(?:\/?([\/\w-.]*))?$/;
+    m = url.match(patternUrl);
     if (!m) {
       console.log('Illegal request. Ignored');
       return;
