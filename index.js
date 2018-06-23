@@ -6,7 +6,7 @@ const port = config.port || 4001;
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 function request(method, host, path, headers, body) {
-  console.log(`Sending request to "${host}/${path}"...`);
+  console.log(`Sending request to "${host}${path}"...`);
 
   let s;
   if (body) {
@@ -72,11 +72,11 @@ async function getContent({clientId, accessToken, host, website, path}) {
 const server = http.createServer((req, res) => {
   const url = req.url;
   //const pattern = /\?website=([\w-.]+)&path=(?:\/?([\/\w-.]*))?$/;
-  /console.log(`Request: ${url}`);
-  let m = url.match(pattern);
+  //console.log(`Request: ${url}`);
+  //let m = url.match(pattern);
 
-  const patternUrl = /(\w+)\?url=\/([\w.-]+)(?:\/?([\/\w-.]*))?$/;
-  m = url.match(patternUrl);
+  const patternUrl = /([\w.]+)\/?\?url=\/([\w.-]+)(?:\/?([\/\w-.]*))?$/;
+  const m = url.match(patternUrl);
   if (!m) {
     console.log('Illegal request. Ignored');
     return;
@@ -91,7 +91,7 @@ const server = http.createServer((req, res) => {
   req.on('data', chunk => {
   });
   req.on('end', () => {
-    getContent({clientId: config.clientId, accessToken: config.accessToken, host, website, path}).then(content => {
+    getContent({clientId: config.dest[host].clientId, accessToken: config.dest[host].accessToken, host, website, path}).then(content => {
       res.write(content);
       res.end();
     });
