@@ -5,8 +5,8 @@ const port = config.port || 4001;
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-function request(method, path, headers, body) {
-  console.log(`Sending request to "${path}"...`);
+function request(method, host, path, headers, body) {
+  console.log(`Sending request to "${host}/${path}"...`);
 
   let s;
   if (body) {
@@ -16,7 +16,7 @@ function request(method, path, headers, body) {
   return new Promise((resolve, reject) => {
     console.log('Promise...');
     const req = https.request({
-      hostname: 'api.mydataspace.net',
+      hostname: host,
       path: path,
       port: 443,
       method: method,
@@ -45,18 +45,20 @@ function request(method, path, headers, body) {
 }
 
 
-async function getContent({clientId, accessToken, website, path}) {
+async function getContent({clientId, accessToken, host, website, path}) {
   console.log(`Authorizing...`);
   const json = await request(
     'GET',
+    host,
     `/auth?authProvider=access-token&state=permission%3dadmin%26clientId%3d${clientId}%26resultFormat=json` +
     `&accessToken=${accessToken}`);
 
   const jwt = JSON.parse(json).jwt;
 
   console.log(`Authorized with JWT ${jwt}`);
-  const content = await request(
+  return await request(
     'POST',
+    host,
     `/v1/entities/renderWebsite`, {
       Authorization: `Bearer ${jwt}`,
       'Content-Type': 'application/json'
@@ -64,32 +66,32 @@ async function getContent({clientId, accessToken, website, path}) {
       website: website,
       path: path
     });
-  return content;
-};
+}
 
 
 const server = http.createServer((req, res) => {
   const url = req.url;
-  const pattern = /\?website=([\w-.]+)&path=(?:\/?([\/\w-.]*))?$/;
-  console.log(`Request: ${url}`);
+  //const pattern = /\?website=([\w-.]+)&path=(?:\/?([\/\w-.]*))?$/;
+  /console.log(`Request: ${url}`);
   let m = url.match(pattern);
+
+  const patternUrl = /(\w+)\?url=\/([\w.-]+)(?:\/?([\/\w-.]*))?$/;
+  m = url.match(patternUrl);
   if (!m) {
-    const patternUrl = /\?url=\/([\w.-]+)(?:\/?([\/\w-.]*))?$/;
-    m = url.match(patternUrl);
-    if (!m) {
-      console.log('Illegal request. Ignored');
-      return;
-    }
+    console.log('Illegal request. Ignored');
+    return;
   }
-  const website = m[1];
-  const path = m[2] ? `website/${m[2]}` : 'website';
+
+  const host = m[1];
+  const website = m[2];
+  const path = m[3] ? `website/${m[3]}` : 'website';
   console.log(`Getting content for ${website}:${path}...`);
   req.on('err', err => {
   });
   req.on('data', chunk => {
   });
   req.on('end', () => {
-    getContent({clientId: config.clientId, accessToken: config.accessToken, website, path}).then(content => {
+    getContent({clientId: config.clientId, accessToken: config.accessToken, host, website, path}).then(content => {
       res.write(content);
       res.end();
     });
