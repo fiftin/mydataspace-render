@@ -13,6 +13,7 @@ function request(method, host, path, headers, body) {
     s = JSON.stringify(body);
     headers['Content-Length'] = s.length;
   }
+
   return new Promise((resolve, reject) => {
     console.log('Promise...');
     const req = https.request({
@@ -22,25 +23,37 @@ function request(method, host, path, headers, body) {
       method: method,
       headers: headers
     }, res => {
-      console.log(`Handing response...`);
+      console.log(`Handing response (code: ${res.statusCode})...`);
       var json = '';
       res.on('data', chunk => {
         console.log(`New chank received`);
         return json += chunk;
       });
       res.on('end', () => {
+        if (res.statusCode >= 400) {
+          reject({
+            status: res.statusCode,
+            message: json
+          });
+          return;
+        }
         resolve(json); 
       });
     });
 
     req.on('error', e => {
       console.error(e);
+      reject({
+        message: e.message,
+        status: 505
+      });
     });
+
     if (s) {
       req.write(s);
     }
-    req.end();
 
+    req.end();
   });
 }
 
@@ -95,6 +108,12 @@ const server = http.createServer((req, res) => {
       res.write(content);
       res.end();
     });
+  }, err => {
+    res.statusCode = err.status || 404;
+    if (err.message) {
+      res.write();
+    }
+    res.end();
   });
 });
 
