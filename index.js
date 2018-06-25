@@ -92,6 +92,8 @@ const server = http.createServer((req, res) => {
   const m = url.match(patternUrl);
   if (!m) {
     console.log('Illegal request. Ignored');
+    res.statusCode = 400;
+    res.end();
     return;
   }
 
@@ -107,13 +109,13 @@ const server = http.createServer((req, res) => {
     getContent({clientId: config.dest[host].clientId, accessToken: config.dest[host].accessToken, host, website, path}).then(content => {
       res.write(content);
       res.end();
+    }, err => {
+      res.statusCode = err.status || 404;
+      if (err.message) {
+        res.write();
+      }
+      res.end();
     });
-  }, err => {
-    res.statusCode = err.status || 404;
-    if (err.message) {
-      res.write();
-    }
-    res.end();
   });
 });
 
