@@ -5,6 +5,14 @@ const port = config.port || 4001;
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
+function isIPAddress(str) {
+  return /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(str);
+}
+
+function isValidHost(str) {
+  return !isIPAddress(str);
+}
+
 function request(method, host, path, headers, body) {
   console.log(`Sending request to "${host}${path}"...`);
 
@@ -100,6 +108,14 @@ const server = http.createServer((req, res) => {
   const host = m[1];
   const website = m[2];
   const path = m[3] ? `website/${m[3]}` : 'website';
+
+  if (!isValidHost(host)) {
+    console.log('Illegal request. Ignored');
+    res.statusCode = 400;
+    res.end();
+    return;
+  }
+
   console.log(`Getting content for ${website}:${path}...`);
   req.on('err', err => {
   });
