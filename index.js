@@ -112,7 +112,7 @@ const server = http.createServer((req, res) => {
     }, err => {
       res.statusCode = err.status || 404;
       if (err.message) {
-        res.write();
+        res.write(err.message);
       }
       res.end();
     });
