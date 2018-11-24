@@ -92,9 +92,6 @@ async function getContent({clientId, accessToken, host, website, path}) {
 
 const server = http.createServer((req, res) => {
   const url = req.url;
-  //const pattern = /\?website=([\w-.]+)&path=(?:\/?([\/\w-.]*))?$/;
-  //console.log(`Request: ${url}`);
-  //let m = url.match(pattern);
 
   const patternUrl = /([\w.]+)\/?\?url=\/([\w.-]+)(?:\/?([\/\w-.]*))?$/;
   const m = url.match(patternUrl);
@@ -107,7 +104,7 @@ const server = http.createServer((req, res) => {
 
   const host = m[1];
   const website = m[2];
-  const path = m[3] ? `website/${m[3]}` : 'website';
+  const path = m[3] ? `website/public_html/${m[3]}` : 'website/public_html';
 
   if (!isValidHost(host)) {
     console.log('Illegal request. Ignored');
