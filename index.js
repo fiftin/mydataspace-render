@@ -65,7 +65,6 @@ function request(method, host, path, headers, body) {
   });
 }
 
-
 async function getContent({clientId, accessToken, host, website, path}) {
   console.log(`Authorizing...`);
   const json = await request(
@@ -89,7 +88,6 @@ async function getContent({clientId, accessToken, host, website, path}) {
     });
 }
 
-
 const server = http.createServer((req, res) => {
   const url = req.url;
 
@@ -104,7 +102,8 @@ const server = http.createServer((req, res) => {
 
   const host = m[1];
   const website = m[2];
-  const path = m[3] ? `website/public_html/${m[3]}` : 'website/public_html';
+  const path = m[3] ? m[3] : '';
+  // const path = m[3] ? `website/public_html/${m[3]}` : 'website/public_html';
 
   if (!isValidHost(host)) {
     console.log('Illegal request. Ignored');
@@ -131,7 +130,6 @@ const server = http.createServer((req, res) => {
     });
   });
 });
-
 
 server.listen(port, err => {
   if (err) {
